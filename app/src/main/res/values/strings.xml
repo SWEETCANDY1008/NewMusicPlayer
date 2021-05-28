@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">NewMusicPlayer</string>
+    <string name="channel_name">음악 알림</string>
+    <string name="channel_description">음악 재생 알림</string>
+</resources>
