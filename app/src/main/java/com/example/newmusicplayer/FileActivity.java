@@ -1,12 +1,8 @@
 package com.example.newmusicplayer;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 import android.Manifest;
-import android.content.ContentResolver;
-import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,7 +10,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -61,7 +56,7 @@ public class FileActivity extends AppCompatActivity {
                 mp3Data = new Mp3Data(item.getmId(), item.getAlbumId(), item.getTitle(), item.getArtist(),
                                         item.getAlbum(), item.getDuration(), item.getPath());
 
-                Intent intent = new Intent(FileActivity.this, MainActivity.class);
+                Intent intent = new Intent(FileActivity.this, PlayerActivity.class);
 
                 intent.putExtra("mp3DataArrayList", mp3DataArrayList);
                 intent.putExtra("mp3Data", mp3Data);
@@ -140,5 +135,36 @@ public class FileActivity extends AppCompatActivity {
                 //Toast.makeText(this, "권한 승인되었음", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "Activity on Resume");
+    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(TAG, "Activity on Start");
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "Activity on Stop");
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "Activity on Pause");
+    }
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d(TAG, "Activity on Restart");
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "Activity on Destroy");
     }
 }

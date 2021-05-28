@@ -57,17 +57,11 @@ public class MusicService extends Service {
 
     public void prepareMusic(ArrayList<Mp3Data> mp3DataArrayList, int index) {
         Mp3Data mp3Data = mp3DataArrayList.get(index);
-
-        if(mediaPlayer == null) {
-            mediaPlayer = new MediaPlayer();
-        }
-        if(mediaPlayer.isPlaying()) {
-            mediaPlayer.reset();
-        }
-        Log.d(TAG, "isPlaying : " + mediaPlayer.isPlaying());
+        mediaPlayer.reset();
         Uri uri = Uri.parse(mp3Data.getPath() + "/" + mp3Data.getmId());
 
         try {
+            mediaPlayer = new MediaPlayer();
             mediaPlayer.setDataSource(getApplicationContext(), uri);
         } catch (IOException e) {
             e.printStackTrace();
@@ -108,6 +102,7 @@ public class MusicService extends Service {
     }
 
     public void pauseMusic() {
+        notifications("음악 플레이테스트", "백그라운드에서 음악이 정지되었어요");
         mediaPlayer.pause();
     }
 
@@ -116,18 +111,14 @@ public class MusicService extends Service {
     }
 
     public void nextMusic(ArrayList<Mp3Data> mp3DataArrayList, int index) {
-        if(mediaPlayer.isPlaying()) {
-            mediaPlayer.stop();
-        }
         // 다음곡 선택하기
         prepareMusic(mp3DataArrayList, index);
+        playMusic(mp3DataArrayList, index);
     }
 
     public void prevMusic(ArrayList<Mp3Data> mp3DataArrayList, int index) {
-        if(mediaPlayer.isPlaying()) {
-            mediaPlayer.stop();
-        }
         prepareMusic(mp3DataArrayList, index);
+        playMusic(mp3DataArrayList, index);
     }
 
     public boolean isPlaying() {
@@ -142,13 +133,14 @@ public class MusicService extends Service {
         return mediaPlayer.getCurrentPosition();
     }
 
+
     public void setSeekTo(int time) {
         mediaPlayer.seekTo(time);
     }
 
     private void notifications(String contentTitle, String contentText) {
         createNotificationChannel();
-        Intent mMainIntent = new Intent(this, MainActivity.class);
+        Intent mMainIntent = new Intent(this, PlayerActivity.class);
         PendingIntent mPendingIntent = PendingIntent.getActivity(
                 this, 1, mMainIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 

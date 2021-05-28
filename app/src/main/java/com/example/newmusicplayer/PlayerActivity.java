@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -18,11 +19,14 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.squareup.picasso.Picasso;
-import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
-    private static final String TAG = "MainActivity";
-    TextView mTitle, mArtist;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+
+public class PlayerActivity extends AppCompatActivity {
+    private static final String TAG = "PlayerActivity";
+    TextView mTitle, mArtist, mDuringTime, mRemainingTime;
     Button mPlayBtn, mPrevBtn, mNextBtn;
     SeekBar seekBar;
     ImageView mImageView;
@@ -39,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     seekBarThread seekBarThread = new seekBarThread();
     uiHandler uiHandler = new uiHandler();
     uiThread uiThread = new uiThread();
+
+    SimpleDateFormat dateFormat = new SimpleDateFormat("mm:ss");
 
     ServiceConnection conn = new ServiceConnection() {
         @Override
@@ -59,10 +65,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_player);
 
         if(musicService == null) {
-            intentService = new Intent(MainActivity.this, MusicService.class);
+            intentService = new Intent(PlayerActivity.this, MusicService.class);
             startService(intentService);
             bindService(intentService, conn, Context.BIND_AUTO_CREATE);
         }
@@ -74,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
 
         mTitle = findViewById(R.id.title);
         mArtist = findViewById(R.id.artist);
+        mDuringTime = findViewById(R.id.duringTime);
+        mRemainingTime = findViewById(R.id.remainingTime);
         mPrevBtn = findViewById(R.id.prev);
         mPlayBtn = findViewById(R.id.play);
         mNextBtn = findViewById(R.id.next);
@@ -133,15 +141,7 @@ public class MainActivity extends AppCompatActivity {
                     musicService.prevMusic(mp3DataArrayList, idx);
                     musicService.setSeekTo(0);
 
-                    // ui 갱신
-                    if(seekBarThread.isAlive()){
-                        seekBarThread.interrupt();
-                    }
-                    if(uiThread.isAlive()){
-                        uiThread.interrupt();
-                    }
-                    uiThread = new uiThread();
-                    uiThread.start();
+                    runThread();
                 }
 
             }
@@ -155,15 +155,7 @@ public class MainActivity extends AppCompatActivity {
                 if(mp3DataArrayList.size() == idx) {
                     musicService.nextMusic(mp3DataArrayList, idx);
                     musicService.setSeekTo(0);
-                    // ui 갱신
-                    if(seekBarThread.isAlive()){
-                        seekBarThread.interrupt();
-                    }
-                    if(uiThread.isAlive()){
-                        uiThread.interrupt();
-                    }
-                    uiThread = new uiThread();
-                    uiThread.start();
+                    runThread();
                 } else if(mp3DataArrayList.size() > idx) {
                     idx = idx + 1;
                     if(idx == mp3DataArrayList.size()) {
@@ -172,46 +164,57 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         musicService.nextMusic(mp3DataArrayList, idx);
                         musicService.setSeekTo(0);
-
-                        // ui 갱신
-                        if(seekBarThread.isAlive()){
-                            seekBarThread.interrupt();
-                        }
-                        if(uiThread.isAlive()){
-                            uiThread.interrupt();
-                        }
-                        uiThread = new uiThread();
-                        uiThread.start();
                     }
+                    runThread();
                 }
             }
         });
     }
 
+    private void runThread() {
+        // ui 갱신
+        if(seekBarThread.isAlive()){
+            seekBarThread.interrupt();
+        }
+        if(uiThread.isAlive()){
+            uiThread.interrupt();
+        }
+        uiThread = new uiThread();
+        uiThread.start();
+    }
+
+
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d(TAG, "Activity on Resume");
     }
     @Override
     protected void onStart() {
         super.onStart();
+        Log.d(TAG, "Activity on Start");
     }
     @Override
     protected void onStop() {
         super.onStop();
+        Log.d(TAG, "Activity on Stop");
     }
     @Override
     protected void onPause() {
         super.onPause();
+        Log.d(TAG, "Activity on Pause");
     }
     @Override
     protected void onRestart() {
         super.onRestart();
+        Log.d(TAG, "Activity on Restart");
     }
     @Override
     protected void onDestroy() {
+//        if(whatPlaying)
         super.onDestroy();
         unbindService(conn);
+        Log.d(TAG, "Activity on Destroy");
     }
 
 
@@ -232,14 +235,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     class seekBarHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             Bundle bundle = msg.getData();
-            int value = bundle.getInt("value");
-            seekBar.setProgress(value);
+            int currentPositions = bundle.getInt("currentPositions");
+            int duration = bundle.getInt("duration");
+            seekBar.setProgress(currentPositions);
+
+            String remaining_toTime = dateFormat.format(new Date(duration - currentPositions));
+            String currentPositions_toTime = dateFormat.format(new Date(currentPositions));
+
+            mDuringTime.setText(currentPositions_toTime);
+            mRemainingTime.setText(remaining_toTime);
         }
     }
 
@@ -255,14 +264,17 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 // 현재 재생중인 위치를 가져와 시크바에 적용
-                int time = musicService.getCurrentPositions();
+                int currentPositions = musicService.getCurrentPositions();
+                int duration = musicService.getDuration();
                 Message message = seekBarHandler.obtainMessage();
                 Bundle bundle = new Bundle();
-                bundle.putInt("value", time);
+                bundle.putInt("currentPositions", currentPositions);
+                bundle.putInt("duration", duration);
                 message.setData(bundle);
                 seekBarHandler.sendMessage(message);
 
                 if(Thread.interrupted()) {
+                    isRun = false;
                     break;
                 }
             }
@@ -282,6 +294,7 @@ public class MainActivity extends AppCompatActivity {
             mPlayBtn.setText("play");
             seekBar.setMax(mp3Data.getDuration());
             seekBar.setProgress(0);
+
         }
     }
 
@@ -297,8 +310,6 @@ public class MainActivity extends AppCompatActivity {
             uiHandler.sendMessage(message);
         }
     }
-
-
 }
 
 
