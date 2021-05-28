@@ -19,7 +19,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.squareup.picasso.Picasso;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -59,8 +58,6 @@ public class PlayerActivity extends AppCompatActivity {
             isService = false;
         }
     };
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -183,7 +180,6 @@ public class PlayerActivity extends AppCompatActivity {
         uiThread.start();
     }
 
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -211,7 +207,6 @@ public class PlayerActivity extends AppCompatActivity {
     }
     @Override
     protected void onDestroy() {
-//        if(whatPlaying)
         super.onDestroy();
         unbindService(conn);
         Log.d(TAG, "Activity on Destroy");

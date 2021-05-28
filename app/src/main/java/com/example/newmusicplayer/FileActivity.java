@@ -1,6 +1,8 @@
 package com.example.newmusicplayer;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
 import android.content.Context;
@@ -56,6 +58,33 @@ public class FileActivity extends AppCompatActivity {
                 mp3Data = new Mp3Data(item.getmId(), item.getAlbumId(), item.getTitle(), item.getArtist(),
                                         item.getAlbum(), item.getDuration(), item.getPath());
 
+
+
+
+                // 프래그먼트를 자바 코드로 동적으로 추가하려면 뷰 그룹이 하나 필요하며 추가 제거 교체를 동적으로 수행하려면
+                // FragmentManager 객체가 필요하다. 이 객체를 얻으려면 getFragmentManager() 혹은 getSupportFragmentManager()
+
+                // fragment 추가 코드
+//                FragmentManager fragmentManager = getSupportFragmentManager();
+//                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+//
+//                MusicFragment musicFragment = new MusicFragment();
+//                fragmentTransaction.add(R.id.frameLayout, musicFragment);
+//
+//                fragmentTransaction.addToBackStack(null);
+//
+//
+//                Bundle bundle = new Bundle(3); // 파라미터의 숫자는 전달하려는 값의 갯수
+//                bundle.putSerializable("mp3DataArrayList", mp3DataArrayList);
+//                bundle.putSerializable("mp3Data", mp3Data);
+//                bundle.putInt("index", position);
+//                musicFragment.setArguments(bundle);
+//
+//                // commit 호출하면 작업한 내용들이 적용됨
+//                fragmentTransaction.commit();
+
+
+//                  기존 리스트를 클릭했을 때 각각의 노래에 대한 액티비티로 이동하게 함
                 Intent intent = new Intent(FileActivity.this, PlayerActivity.class);
 
                 intent.putExtra("mp3DataArrayList", mp3DataArrayList);
@@ -65,7 +94,6 @@ public class FileActivity extends AppCompatActivity {
             }
         });
     }
-
 
 //    public void allProjections() {
 //        String[] mProjection = {
